@@ -1,0 +1,6 @@
+name        = "[Shine]EnforceTeamSize"
+source_dir  = "source/"
+output_dir  = "output/"
+description = [=[Work in Progress, Extracting TGNS's EnforceTeamSize plugin for Shine.]=]
+image       = "preview.jpg"
+publish_id = "13bd1b70"
