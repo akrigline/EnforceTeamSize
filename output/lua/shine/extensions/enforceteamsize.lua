@@ -2,9 +2,10 @@ local Plugin = {}
 
 Plugin.HasConfig = true
 Plugin.ConfigName = "enforceteamsize.json"
+
 Plugin.DefaultConfig = {
     MaxPlayers = 16,
-	TooManyMessage = "Please Spectate until the round ends."
+    TooManyMessage = "Please Spectate until the round ends."
 }
 Plugin.CheckConfig = true
 Plugin.CheckConfigTypes = true
@@ -17,19 +18,20 @@ function Plugin:Initialise()
 end
 
 function Plugin:JoinTeam(gamerules, player, newteam, force, ShineForce)
-	if ShineForce or newteam == kSpectatorIndex or newteam == kTeamReadyRoom then return end
-	return self:Check()
-end
+    if ShineForce or newteam == kSpectatorIndex or newteam == kTeamReadyRoom then return end
 
-function Plugin:Check()	
-	if #Shine.GetAllPlayers() > self.Config.MaxPlayers then
-		return false
-	end
-end
+    local AlienCount = gamerules:GetTeam2():GetNumPlayers()
+    local MarineCount = gamerules:GetTeam1():GetNumPlayers()
 
-function Plugin:Cleanup()
-    --Cleanup your extra stuff like timers, data etc.
-    self.BaseClass.Cleanup( self )
+    --Sum of playing ppl
+    local TotalCount = AlienCount + MarineCount
+
+    --Check if the sum is above MaxPlayers
+    if TotalCount > self.Config.MaxPlayers then
+        --Inform player (change rgb code to whatever you like)
+        Shine:NotifyDualColour( player, 0, 255, 0, "EnforcedTeamsize", 255, 255, 255, self.Config.TooManyMessage )
+        return false
+    end
 end
 
 Shine:RegisterExtension("enforceteamsize", Plugin )
