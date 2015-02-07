@@ -1,37 +1,48 @@
+local Shine = Shine
+
 local Plugin = {}
 
 Plugin.HasConfig = true
 Plugin.ConfigName = "enforceteamsize.json"
 
+--[[
+--TeamNumbers:
+ - 0: RR
+ - 1: Marines
+ - 2: Aliens
+ - 3: Spec
+ ]]
 Plugin.DefaultConfig = {
-    MaxPlayers = 16,
-    TooManyMessage = "Please Spectate until the round ends."
+    Teams = {
+        [1] = {
+            MaxPlayers = 8,
+            TooManyMessage = "The %s have currently too many players. Please Spectate until the round ends."
+        },
+        [2] = {
+            MaxPlayers = 8,
+            TooManyMessage = "The %s have currently too many players. Please Spectate until the round ends."
+        }
+    },
+    MessageNameColor = {0, 255, 0}
 }
 Plugin.CheckConfig = true
 Plugin.CheckConfigTypes = true
-
-Plugin.DefaultState = false
 
 function Plugin:Initialise()
     self.Enabled = true
     return true
 end
+function Plugin:JoinTeam(Gamerules, Player, NewTeam, Force, ShineForce)
+    if ShineForce or not self.Config.Teams[NewTeam] then return end
 
-function Plugin:JoinTeam(gamerules, player, newteam, force, ShineForce)
-    if ShineForce or newteam == kSpectatorIndex or newteam == kTeamReadyRoom then return end
-
-    local AlienCount = gamerules:GetTeam2():GetNumPlayers()
-    local MarineCount = gamerules:GetTeam1():GetNumPlayers()
-
-    --Sum of playing ppl
-    local TotalCount = AlienCount + MarineCount
-
-    --Check if the sum is above MaxPlayers
-    if TotalCount > self.Config.MaxPlayers then
-        --Inform player (change rgb code to whatever you like)
-        Shine:NotifyDualColour( player, 0, 255, 0, "EnforcedTeamsize", 255, 255, 255, self.Config.TooManyMessage )
+    --Check if team is above MaxPlayers
+    if Gamerules:GetTeam(NewTeam):GetNumPlayers() >= self.Config.Teams[NewTeam].MaxPlayers then
+        --Inform player
+        Shine:NotifyDualColour( Player, self.Config.MessageNameColor[1], self.Config.MessageNameColor[2],
+            self.Config.MessageNameColor[3], "EnforcedTeamSizes", 255, 255, 255,
+            self.Config.Teams[NewTeam].TooManyMessage, true, Shine:GetTeamName(NewTeam, true) )
         return false
     end
 end
-
 Shine:RegisterExtension("enforceteamsize", Plugin )
+
